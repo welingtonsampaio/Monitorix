@@ -127,6 +127,8 @@ sub http_header {
 
 	if($mimetype =~ m/(html|cgi)/) {
 		print "Content-Type: text/html; charset=UTF-8\r\n";
+	} elsif($mimetype eq "json") {
+		print "Content-Type: application/json; charset=UTF-8\r\n";
 	} elsif($mimetype eq "css") {
 		print "Content-Type: text/css; charset=UTF-8\r\n";
 	} else {
@@ -205,7 +207,7 @@ sub handle_request {
 	if(!$target || $target eq $base_url) {
 		$target = "index.html" unless $target;
 	}
-	($mimetype) = ($target =~ m/.*\.(html|cgi|css|png)$/);
+	($mimetype) = ($target =~ m/.*\.(html|cgi|css|png|json)$/);
 
 	$target =~ s/^\/*//;		# removes leading slashes
 	$target_cgi =~ s/^\/*//;	# removes leading slashes
@@ -213,7 +215,12 @@ sub handle_request {
 	$target =~ s/[^$OK_CHARS]/_/go;		# only $OK_CHARS are allowed
 	$target_cgi =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
 
-	if($target_cgi eq "monitorix.cgi") {
+	if($target_cgi eq "consulting.json") {
+		chdir("cgi");
+		open(EXEC, "./api.cgi |");
+		@data = <EXEC>;
+		close(EXEC);
+	} elsif($target_cgi eq "monitorix.cgi") {
 		chdir("cgi");
 		open(EXEC, "./$target_cgi |");
 		@data = <EXEC>;
