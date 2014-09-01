@@ -14,53 +14,55 @@ my $dbh = DBI->connect('DBI:mysql:{{dbname}};host={{dbhost}}', '{{dbuser}}', '{{
 	            { RaiseError => 1 }
 	           );
 
-my $more = 0;
+sub query_results {
+	my ($table, $where, $dbh) = @_;
+	my $sth = $dbh->prepare("SELECT year,month,day,hour,minute,value FROM $table WHERE $where");
+	$sth->execute();
+	return $sth;
+}
+
+sub print_results {
+	my ($table, $sth) = @_;
+	my $more = 0;
+	my ( $year, $month, $day, $hour, $minute, $value);
+	print '"'. $table .'": [';
+	while ( ($year, $month, $day, $hour, $minute, $value) = $sth->fetchrow_array( ) )  {
+		if ($more == 1){
+			print ', ';
+		}
+		print '{"date": "'."$day\/$month\/$year $hour:$minute:00".'", "value": "'.$value.'"}';
+		$more = 1;
+	}
+	print '] ';
+	$sth->finish();
+}
+
+sub print_day {
+	my ($table, $dbh) = @_;
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+	my $ontem= $mday - 1;
+	my $sth = query_results($table, "day = $mday", $dbh);
+	print_results($table, $sth);
+}
+
+
+our $mode = defined(param('mode')) ? param('mode') : 'loadaverage';
+
 print '{';
 
-# LoadAverage Control
-print '"loadaverage": [';
-my $sth = $dbh->prepare('SELECT year,month,day,hour,minute,value FROM loadaverage');
-$sth->execute();
-my ( $year, $month, $day, $hour, $minute, $value);
-while ( ($year, $month, $day, $hour, $minute, $value) = $sth->fetchrow_array( ) )  {
-	if ($more == 1){
-		print ', ';
-	}
-	print '{"date": "'."$day\/$month\/$year $hour:$minute:00".'", "value": "'.$value.'"}';
-	$more = 1;
+if ( $mode eq "loadaverage" ) {
+	print_day('loadaverage', $dbh);
 }
-print '], ';
 
-# Memory Control
-$more = 0;
-print '"memory": [';
-my $sth = $dbh->prepare('SELECT year,month,day,hour,minute,value FROM memory');
-$sth->execute();
-my ( $year, $month, $day, $hour, $minute, $value);
-while ( ($year, $month, $day, $hour, $minute, $value) = $sth->fetchrow_array( ) )  {
-	if ($more == 1){
-		print ', ';
-	}
-	print '{"date": "'."$day\/$month\/$year $hour:$minute:00".'", "value": "'.$value.'"}';
-	$more = 1;
+if ( $mode eq "memory" ) {
+	print_day('memory', $dbh);
 }
-print '], ';
 
-# Proccess Count
-$more = 0;
-print '"proccess_count": [';
-my $sth = $dbh->prepare('SELECT year,month,day,hour,minute,value FROM proccess_count');
-$sth->execute();
-my ( $year, $month, $day, $hour, $minute, $value);
-while ( ($year, $month, $day, $hour, $minute, $value) = $sth->fetchrow_array( ) )  {
-	if ($more == 1){
-		print ', ';
-	}
-	print '{"date": "'."$day\/$month\/$year $hour:$minute:00".'", "value": "'.$value.'"}';
-	$more = 1;
+if ( $mode eq "proccess_count" ) {
+	print_day('proccess_count', $dbh);
 }
-print ']';
-$sth->finish();
+
+
 print '}';
 $dbh->disconnect();
 
