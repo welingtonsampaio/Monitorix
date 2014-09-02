@@ -163,13 +163,11 @@ sub system_update {
 		}
 	}
 
-	my $dbh = DBI->connect('DBI:mysql:{{dbname}};host={{dbhost}}', '{{dbuser}}', '{{dbpass}}',
-								{ RaiseError => 1 }
-							);
-    $dbh->do("INSERT INTO loadaverage VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote("$load1|$load5|$load15") . ")");
-    $dbh->do("INSERT INTO memory VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote("$mtotl|$mbuff|$mcach|$mfree") . ")");
-    $dbh->do("INSERT INTO proccess_count VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote("$nproc|$npslp|$nprun") . ")");
-    $dbh->disconnect();
+	my $dbh = DBI->connect('DBI:mysql:{{dbname}};host={{dbhost}}', '{{dbuser}}', '{{dbpass}}', { RaiseError => 1 } );
+  $dbh->do("INSERT INTO loadaverage VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote("$load1|$load5|$load15") . ")");
+  $dbh->do("INSERT INTO memory VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote("$mtotl|$mbuff|$mcach|$mfree") . ")");
+  $dbh->do("INSERT INTO proccess_count VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote("$nproc|$npslp|$nprun") . ")");
+  $dbh->disconnect();
 }
 
 sub system_cgi {
