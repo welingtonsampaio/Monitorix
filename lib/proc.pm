@@ -234,11 +234,14 @@ sub proc_update {
 	}
 
 	my $dbh = DBI->connect('DBI:mysql:{{dbname}};host={{dbhost}}', '{{dbuser}}', '{{dbpass}}', { RaiseError => 1 } );
+	my $h = 0;
 	for($n = 0; $n < $proc->{max}; $n++) {
 		@p = split(' ', $procs[$n]);
 		$rrdata .= ":$p[0]:$p[1]:$p[2]:$p[3]:$p[4]:$p[5]:$p[6]:$p[7]:$p[8]";
-		$dbh->do("INSERT INTO cpu_info VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote("core$n|$p[0]|$p[1]|$p[2]|$p[3]|$p[4]|$p[5]|$p[6]|$p[7]|$p[8]") . ")");
+		$h += $p[3];
 	}
+	$h = 100 - ($h / $proc->{max});
+	$dbh->do("INSERT INTO cpu_info VALUES (null, YEAR(NOW()), MONTH(NOW()), DAY(NOW()), HOUR(NOW()), MINUTE(NOW()), " . $dbh->quote($h) . ")");
 	$dbh->disconnect();
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;

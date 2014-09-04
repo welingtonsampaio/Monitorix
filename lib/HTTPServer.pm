@@ -129,6 +129,7 @@ sub http_header {
 		print "Content-Type: text/html; charset=UTF-8\r\n";
 	} elsif($mimetype eq "json") {
 		print "Content-Type: application/json; charset=UTF-8\r\n";
+		print "Access-Control-Allow-Origin: *\r\n";
 	} elsif($mimetype eq "css") {
 		print "Content-Type: text/css; charset=UTF-8\r\n";
 	} else {
